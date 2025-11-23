@@ -8,6 +8,8 @@ const MAX_BATCH_BYTES: usize = 4096;
 
 
 #[derive(Clone)]
+
+//Struct to wrap message and size for easier processing
 struct PendingMessage {
     message: MessageEnum,
     size: usize,
@@ -94,7 +96,6 @@ impl Processing {
         if let Some(children) = self.waiting_map.get(signature) {
             let num_children = children.len();
             
-            // This prioritizes messages that unblock more dependencies
             let boost = if num_children >= 4 {
                 1.12  // 12% boost for 4+ children
             } else if num_children >= 2 {
@@ -160,7 +161,7 @@ impl Processing {
             .enumerate()
             .collect();
         
-        // Sort by point/byte ratio (descending) for greedy selection
+        // Sort by point/byte ratio descending for greedy selection
         let mut sorted_candidates: Vec<(usize, f64, &PendingMessage)> = candidates
             .iter()
             .map(|(idx, pending)| {
@@ -169,7 +170,7 @@ impl Processing {
             })
             .collect();
         
-        // Sort by point/byte ratio in descending order (highest ratio first)
+        // Sort by point/byte ratio in descending order
         sorted_candidates.sort_by(|(_, ratio_a, _), (_, ratio_b, _)| {
             ratio_b.partial_cmp(ratio_a).unwrap()
         });
@@ -196,7 +197,7 @@ impl Processing {
                     false
                 };
                 
-                // Check if adding this message would create a 3rd same type in a row (bad - gets penalty)
+                // Check if adding this message would create a 3rd same type in a row (penalty)
                 let would_be_third_same_type = if temp_types.len() >= 2 {
                     // Check if the last 2 types in the batch are both the same as this message's type
                     temp_types.iter().rev().take(2).all(|&t| t == msg_type)
