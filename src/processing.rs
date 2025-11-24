@@ -66,7 +66,7 @@ impl Processing {
             }
         }
         
-        // Estimate dependency length bonus
+        // Estimate dependency length bonus and update dependecy length
         let dependency_bonus = if message.get_parent_signature().is_some() {
             self.current_dependency_length + 1
         } else {
